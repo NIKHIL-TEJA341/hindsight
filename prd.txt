@@ -1,0 +1,1061 @@
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+PROJECT: SALES & REVENUE INTELLIGENCE AGENT
+TAGLINE: An AI Sales Agent That Remembers Every Deal
+
+============================================================
+1. PRODUCT OVERVIEW
+============================================================
+
+Sales & Revenue Intelligence Agent is an AI-powered sales assistant designed to help sales representatives manage prospects, deals, customer interactions, objections, requirements, and follow-ups.
+
+The key differentiator is persistent agent memory using Hindsight.
+
+Unlike a normal chatbot that starts with little or no knowledge in a new conversation, this agent can remember important information learned from previous sales interactions and use that information in future conversations.
+
+The application will use:
+
+- Streamlit — User Interface
+- Python — Application development
+- Agno — AI Agent framework
+- Groq API — LLM provider
+- GPT-OSS 120B — Primary LLM
+- Hindsight — Long-term agent memory
+- SQLite — Chat/conversation storage only
+
+The project is based on the hackathon requirement to build an AI agent that can remember, recall, and improve over time using Hindsight.
+
+
+============================================================
+2. PROBLEM STATEMENT
+============================================================
+
+Sales representatives interact with prospects across multiple meetings, calls, emails, and follow-ups.
+
+Important information is easily lost:
+
+- Customer requirements
+- Pain points
+- Objections
+- Budget
+- Decision makers
+- Competitors being considered
+- Pricing discussions
+- Previous proposals
+- Promises made by the salesperson
+- Previous outcomes
+- Preferred communication style
+- Reasons for rejecting previous proposals
+
+A normal AI chatbot may provide a useful response based on the current conversation, but when a new conversation starts, the salesperson may need to provide the previous context again.
+
+This creates repetitive work and prevents the AI agent from becoming more useful over time.
+
+The proposed system solves this by giving the sales agent persistent memory through Hindsight.
+
+
+============================================================
+3. PRODUCT OBJECTIVE
+============================================================
+
+Build an AI sales agent that:
+
+1. Understands sales-related conversations.
+2. Helps sales representatives with deals and prospects.
+3. Identifies useful information from interactions.
+4. Stores important long-term information in Hindsight.
+5. Recalls relevant information during future interactions.
+6. Uses remembered information to generate personalized responses.
+7. Works across completely new conversations.
+8. Demonstrates clear improvement as more information is accumulated.
+
+The core product principle is:
+
+"Every interaction makes the sales agent more informed about the deal."
+
+
+============================================================
+4. TARGET USER
+============================================================
+
+Primary user:
+
+Sales Representative / Account Executive
+
+The user interacts with the agent to:
+
+- Understand a prospect
+- Prepare for meetings
+- Handle objections
+- Prepare follow-ups
+- Summarize deal history
+- Draft personalized communication
+- Review previous discussions
+- Decide what to discuss next
+
+
+============================================================
+5. CORE USE CASE
+============================================================
+
+The central use case is:
+
+DEAL INTELLIGENCE
+
+The agent remembers the history and context of a sales opportunity and uses that information to assist the salesperson in future interactions.
+
+Example:
+
+A salesperson interacts with the agent about Acme Corporation.
+
+The salesperson tells the agent:
+
+"Acme is interested in our enterprise plan."
+
+Later:
+
+"Their CTO is mainly concerned about deployment time."
+
+Later:
+
+"The CFO will not approve anything above $50,000 without additional justification."
+
+Later:
+
+"They rejected our previous proposal because the implementation timeline was six weeks."
+
+Hindsight retains these important pieces of information.
+
+Several days later, the salesperson starts a completely NEW CHAT:
+
+"Prepare me for my next Acme meeting."
+
+The agent retrieves the relevant memories and responds using the accumulated knowledge.
+
+The salesperson does NOT need to explain Acme again.
+
+
+============================================================
+6. WHY HINDSIGHT IS ESSENTIAL
+============================================================
+
+Hindsight is the central memory layer of the application.
+
+It is NOT being added as a decorative feature.
+
+The application should demonstrate that:
+
+WITHOUT HINDSIGHT:
+
+The agent does not have the long-term learned context when starting a new conversation.
+
+WITH HINDSIGHT:
+
+The agent recalls relevant information from previous interactions and produces a more contextual response.
+
+Therefore, removing Hindsight should remove the application's core long-term memory capability.
+
+This creates a clear before/after demonstration for the hackathon.
+
+
+============================================================
+7. IMPORTANT DISTINCTION: SQLITE VS HINDSIGHT
+============================================================
+
+SQLite and Hindsight have different responsibilities.
+
+SQLITE:
+
+SQLite is used only for application-level chat storage.
+
+It stores:
+
+- Chat ID
+- Conversation title
+- User ID
+- Message
+- Message role
+- Timestamp
+- Conversation metadata
+
+SQLite allows the application to:
+
+- Display previous chats
+- Show a chat list
+- Continue an existing conversation
+- Reopen an old conversation
+- Maintain UI-level conversation history
+
+SQLite is NOT the agent's long-term memory.
+
+HINDSIGHT:
+
+Hindsight stores and recalls important information learned from interactions.
+
+Examples:
+
+- Customer requirements
+- Customer objections
+- Stakeholders
+- Budget information
+- Deal information
+- Preferences
+- Previous decisions
+- Previous proposal outcomes
+- Important commitments
+- Relevant historical context
+
+The agent uses Hindsight when it needs information from previous interactions.
+
+Therefore:
+
+SQLite = "What messages were in the conversation?"
+
+Hindsight = "What does the agent remember and know from previous interactions?"
+
+
+============================================================
+8. HIGH-LEVEL ARCHITECTURE
+============================================================
+
+                         USER
+                           |
+                           v
+                  +----------------+
+                  |   Streamlit    |
+                  |      UI        |
+                  +-------+--------+
+                          |
+                          v
+                  +----------------+
+                  | Application    |
+                  | Backend        |
+                  +-------+--------+
+                          |
+                          v
+                  +----------------+
+                  |   Agno Agent   |
+                  |                |
+                  | Sales Agent    |
+                  | Instructions  |
+                  | Agent Logic   |
+                  +---+--------+---+
+                      |        |
+                      |        |
+             Recall   |        | Generate
+                      |        |
+                      v        v
+               +----------+  +----------------+
+               | Hindsight|  | Groq API       |
+               | Memory   |  | GPT-OSS 120B   |
+               +----------+  +----------------+
+                      |        |
+                      +----+---+
+                           |
+                           v
+                  +----------------+
+                  | Agent Response |
+                  +-------+--------+
+                          |
+                          v
+                     Streamlit
+                          |
+                          v
+                         USER
+
+
+                 APPLICATION STORAGE
+
+                  +----------------+
+                  |    SQLite      |
+                  |                |
+                  | Chat History   |
+                  | Messages       |
+                  | Chat Metadata  |
+                  +----------------+
+
+
+============================================================
+9. COMPLETE INPUT FLOW
+============================================================
+
+STEP 1:
+User enters a sales-related message in Streamlit.
+
+Example:
+
+"Prepare me for my next meeting with Acme."
+
+STEP 2:
+Streamlit receives the input.
+
+STEP 3:
+The application identifies the current user and conversation.
+
+STEP 4:
+The message is sent to the Agno Sales Agent.
+
+STEP 5:
+The agent determines what the user is asking.
+
+STEP 6:
+The agent uses Hindsight to recall relevant long-term memories.
+
+Example:
+
+Hindsight retrieves:
+
+- Acme's main concern
+- Previous objection
+- CTO preference
+- Budget information
+- Previous proposal outcome
+
+STEP 7:
+The agent combines:
+
+- Current user request
+- Current conversation context
+- Relevant Hindsight memories
+- Sales-agent instructions
+
+STEP 8:
+The combined context is sent to GPT-OSS 120B through Groq.
+
+STEP 9:
+The LLM generates the response.
+
+STEP 10:
+Agno returns the response to the application.
+
+STEP 11:
+Streamlit displays the response to the user.
+
+STEP 12:
+Important newly learned information from the interaction is retained through Hindsight.
+
+STEP 13:
+The current conversation message is stored in SQLite for the chat UI.
+
+
+============================================================
+10. OUTPUT FLOW
+============================================================
+
+User Message
+     |
+     v
+Agno Sales Agent
+     |
+     v
+Retrieve relevant Hindsight memories
+     |
+     v
+Combine current context + memory
+     |
+     v
+GPT-OSS 120B
+     |
+     v
+Generate response
+     |
+     v
+Agno
+     |
+     +--------------------+
+     |                    |
+     v                    v
+Streamlit             Hindsight
+Display response       Retain useful
+                       new information
+     |
+     v
+SQLite
+Store conversation message
+
+
+============================================================
+11. MEMORY FLOW
+============================================================
+
+                    USER INTERACTION
+                           |
+                           v
+                    AGNO SALES AGENT
+                           |
+                           v
+               Understand interaction
+                           |
+                           v
+             Identify useful information
+                           |
+                           v
+                       HINDSIGHT
+                           |
+                           v
+                    Persistent Memory
+                           |
+                           |
+                    Future Interaction
+                           |
+                           v
+                    AGNO SALES AGENT
+                           |
+                           v
+                  HINDSIGHT RECALL
+                           |
+                           v
+                Relevant past knowledge
+                           |
+                           v
+                       GPT-OSS
+                           |
+                           v
+               Personalized response
+
+
+============================================================
+12. WHAT THE AGENT SHOULD REMEMBER
+============================================================
+
+The agent should focus on information that has long-term value.
+
+CUSTOMER INFORMATION:
+
+- Company name
+- Customer role
+- Stakeholders
+- Decision makers
+- Communication preferences
+
+DEAL INFORMATION:
+
+- Product/service being considered
+- Deal stage
+- Expected value
+- Timeline
+- Requirements
+
+CUSTOMER PAIN POINTS:
+
+- Business problems
+- Technical concerns
+- Business requirements
+- Specific priorities
+
+OBJECTIONS:
+
+- Pricing objections
+- Technical objections
+- Implementation concerns
+- Security concerns
+- Competitor concerns
+
+PREVIOUS OUTCOMES:
+
+- What was proposed
+- What was rejected
+- What worked
+- What did not work
+- Previous commitments
+
+IMPORTANT PREFERENCES:
+
+- Preferred communication style
+- Preferred solution
+- Meeting preferences
+- Decision-making preferences
+
+
+============================================================
+13. EXAMPLE MEMORY SCENARIO
+============================================================
+
+INTERACTION 1:
+
+Salesperson:
+
+"Acme Corp is interested in our enterprise plan."
+
+Agent:
+
+"Understood. I'll keep Acme's enterprise interest in context."
+
+Hindsight:
+
+Stores relevant Acme deal information.
+
+
+INTERACTION 2:
+
+Salesperson:
+
+"Their CTO is worried about deployment taking too long."
+
+Agent:
+
+"That's an important technical concern. We should address deployment time in the next discussion."
+
+Hindsight:
+
+Stores the CTO's concern about deployment time.
+
+
+INTERACTION 3:
+
+Salesperson:
+
+"The CFO requires additional justification for deals above $50,000."
+
+Hindsight:
+
+Stores the budget/approval information.
+
+
+INTERACTION 4:
+
+Salesperson:
+
+"They rejected our previous proposal because implementation was estimated at six weeks."
+
+Hindsight:
+
+Stores the previous proposal outcome.
+
+
+============================================================
+14. NEW CHAT DEMONSTRATION
+============================================================
+
+Several days later.
+
+User clicks:
+
+[ NEW CHAT ]
+
+The previous conversation is NOT included as visible chat context.
+
+User:
+
+"Prepare me for my next Acme meeting."
+
+The agent uses Hindsight.
+
+Hindsight recalls:
+
+- Acme wants enterprise plan
+- CTO is concerned about deployment
+- CFO approval is required above $50,000
+- Previous proposal was rejected due to six-week implementation
+
+The agent generates:
+
+"Based on your previous discussions with Acme, the main issue to address is implementation time. Their CTO was concerned about deployment speed, and the previous proposal was rejected because the estimated implementation time was six weeks.
+
+The CFO also requires additional justification for deals above $50,000.
+
+For the next meeting, focus on a shorter implementation plan and prepare clear justification for the pricing."
+
+
+This is the main Hindsight demonstration.
+
+
+============================================================
+15. CONTINUE CHAT
+============================================================
+
+The application should support:
+
+[ CONTINUE CHAT ]
+
+When the user continues an existing conversation:
+
+- SQLite loads the previous messages.
+- The current conversation context is available.
+- Hindsight can additionally provide long-term relevant memories.
+
+Flow:
+
+Continue Chat
+     |
+     v
+Load SQLite conversation
+     |
+     v
+Current conversation context
+     |
+     v
+Agno Agent
+     |
+     +------> Hindsight Recall
+     |
+     v
+GPT-OSS 120B
+     |
+     v
+Response
+
+
+============================================================
+16. NEW CHAT
+============================================================
+
+When the user selects:
+
+[ NEW CHAT ]
+
+A new conversation ID is created.
+
+The previous visible messages are NOT passed as current conversation context.
+
+However, the agent can still use Hindsight.
+
+Flow:
+
+New Chat
+   |
+   v
+New Conversation ID
+   |
+   v
+User Message
+   |
+   v
+Agno Agent
+   |
+   v
+Hindsight Recall
+   |
+   v
+Relevant Previous Memories
+   |
+   v
+GPT-OSS 120B
+   |
+   v
+Personalized Response
+
+
+============================================================
+17. STREAMLIT UI
+============================================================
+
+SIDEBAR:
+
+Sales & Revenue Agent
+
+Customer/User
+[ User ID ]
+
+----------------------------
+
+Conversations
+
++ New Chat
+
+Chat 1
+Chat 2
+Chat 3
+
+----------------------------
+
+Optional:
+
+Memory Status
+"Long-term memory active"
+
+
+MAIN CHAT AREA:
+
+Sales & Revenue Intelligence Agent
+
+--------------------------------
+
+User:
+Prepare me for my next Acme meeting.
+
+Agent:
+Based on your previous discussions
+with Acme...
+
+
+--------------------------------
+
+[ Type your message... ]
+
+[ Send ]
+
+
+OPTIONAL MEMORY PANEL:
+
+Relevant Memories
+
+- Acme Enterprise Deal
+- CTO deployment concern
+- $50K CFO approval threshold
+- Previous proposal rejected
+  due to implementation timeline
+
+
+============================================================
+18. AGNO AGENT RESPONSIBILITIES
+============================================================
+
+The Agno agent should:
+
+1. Act as a Sales & Revenue Intelligence Agent.
+2. Understand sales-related requests.
+3. Identify the relevant customer/deal context.
+4. Recall relevant Hindsight memories.
+5. Use memories while generating responses.
+6. Provide personalized sales assistance.
+7. Identify useful information from new interactions.
+8. Retain important information through Hindsight.
+9. Handle new conversations using long-term memory.
+10. Avoid unnecessarily storing irrelevant information.
+
+
+============================================================
+19. LLM RESPONSIBILITIES
+============================================================
+
+GPT-OSS 120B through Groq will be responsible for:
+
+- Understanding the user's request
+- Reasoning over retrieved context
+- Generating natural-language responses
+- Summarizing deal context
+- Preparing meeting briefs
+- Drafting follow-ups
+- Suggesting responses to objections
+- Using remembered information appropriately
+
+
+============================================================
+20. HINDSIGHT RESPONSIBILITIES
+============================================================
+
+Hindsight is responsible for:
+
+- Persistent memory
+- Retaining useful information
+- Recalling relevant information
+- Providing historical context
+- Supporting cross-conversation memory
+- Helping the agent improve its responses over time
+
+Hindsight should be treated as the agent's LONG-TERM MEMORY LAYER.
+
+
+============================================================
+21. SQLITE RESPONSIBILITIES
+============================================================
+
+SQLite is responsible ONLY for application chat storage.
+
+Suggested tables:
+
+CONVERSATIONS
+
+- conversation_id
+- user_id
+- title
+- created_at
+- updated_at
+
+MESSAGES
+
+- message_id
+- conversation_id
+- role
+- content
+- timestamp
+
+SQLite is NOT responsible for the agent's long-term memory.
+
+The agent should not depend on SQLite to remember sales knowledge across new chats.
+
+
+============================================================
+22. WHAT HAPPENS IF HINDSIGHT IS REMOVED?
+============================================================
+
+WITH HINDSIGHT:
+
+User:
+
+"Prepare me for my Acme meeting."
+
+Agent:
+
+Uses previous Acme information and provides a personalized preparation.
+
+WITHOUT HINDSIGHT:
+
+The same new conversation starts.
+
+The agent has no long-term learned sales context.
+
+It should ask for information again or provide a generic response.
+
+SQLite can still display the old chat if the user explicitly opens it, but the agent should not automatically gain the long-term memory that Hindsight provides.
+
+This proves that Hindsight is essential to the product's core functionality.
+
+
+============================================================
+23. DATABASE DECISION
+============================================================
+
+DATABASE:
+
+SQLite — YES
+
+Purpose:
+
+Application-level chat persistence.
+
+RAG:
+
+NOT REQUIRED FOR MVP.
+
+The hackathon problem statement requires Hindsight but does not require RAG.
+
+RAG can be added later if company documents, product documentation, pricing documents, or sales policies need to be searched.
+
+The core project should remain focused on Hindsight memory.
+
+
+============================================================
+24. OPTIONAL FUTURE RAG ARCHITECTURE
+============================================================
+
+If RAG is added later:
+
+                     AGNO AGENT
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+         HINDSIGHT                  RAG
+       Deal Memory             Company Knowledge
+             |                       |
+             +-----------+-----------+
+                         |
+                         v
+                    GPT-OSS 120B
+                         |
+                         v
+                      Response
+
+Hindsight:
+
+"What happened with this customer?"
+
+RAG:
+
+"What does the company/product documentation say?"
+
+These two systems solve different problems.
+
+
+============================================================
+25. CORE FEATURES
+============================================================
+
+MUST HAVE:
+
+1. Streamlit chat interface
+2. Agno Sales Agent
+3. Groq API integration
+4. GPT-OSS 120B
+5. Hindsight integration
+6. Persistent long-term memory
+7. Memory retrieval
+8. Memory retention
+9. New Chat
+10. Continue Chat
+11. SQLite chat storage
+12. Sales/deal-focused agent behavior
+13. Clear memory demonstration
+
+
+============================================================
+26. OPTIONAL FEATURES
+============================================================
+
+Only implement these after the core system works:
+
+- Customer profiles
+- Deal dashboard
+- Deal-stage tracking
+- Meeting preparation
+- Follow-up email generation
+- Objection handling mode
+- Memory visualization
+- Memory search
+- Analytics
+- RAG
+- Authentication
+- CRM integration
+
+
+============================================================
+27. MVP SCOPE
+============================================================
+
+The MVP should focus on ONE workflow:
+
+DEAL INTELLIGENCE
+
+ONE USER:
+
+Sales Representative
+
+ONE CORE VALUE:
+
+The agent remembers the history of a sales opportunity and uses it in future interactions.
+
+
+============================================================
+28. DEMO FLOW
+============================================================
+
+The final demo should follow this story:
+
+STEP 1:
+
+Start with a new customer/deal.
+
+STEP 2:
+
+Give the agent several pieces of sales information.
+
+Example:
+
+- Customer requirements
+- CTO concern
+- Budget
+- Objection
+- Previous proposal result
+
+STEP 3:
+
+Show that the agent interacts normally.
+
+STEP 4:
+
+Start a completely NEW CHAT.
+
+STEP 5:
+
+Ask:
+
+"Prepare me for my next Acme meeting."
+
+STEP 6:
+
+Show the agent recalling the previous information.
+
+STEP 7:
+
+Ask a follow-up question.
+
+STEP 8:
+
+Show increasingly personalized assistance.
+
+STEP 9:
+
+Explain:
+
+"SQLite stores the conversation history for the application, while Hindsight provides the long-term memory that allows the agent to remember and use knowledge across conversations."
+
+
+============================================================
+29. SUCCESS CRITERIA
+============================================================
+
+The project is successful if:
+
+1. The agent can hold a sales conversation.
+2. Important sales information is retained in Hindsight.
+3. The user can start a new conversation.
+4. The agent can recall relevant previous information.
+5. The response changes based on remembered information.
+6. The user does not need to repeat previously remembered information.
+7. Previous chats can be displayed through SQLite.
+8. Removing Hindsight removes the agent's long-term memory capability.
+9. The system is stable enough for a live demonstration.
+10. The role of Hindsight is clearly visible to judges.
+
+
+============================================================
+30. FINAL TECHNOLOGY STACK
+============================================================
+
+Frontend:
+Streamlit
+
+Programming Language:
+Python
+
+Agent Framework:
+Agno
+
+LLM Provider:
+Groq API
+
+LLM:
+GPT-OSS 120B
+
+Long-Term Memory:
+Hindsight
+
+Application Database:
+SQLite
+
+RAG:
+Not required for MVP
+
+Deployment:
+To be decided based on final hosting requirements
+
+
+============================================================
+31. FINAL PRODUCT DEFINITION
+============================================================
+
+Sales & Revenue Intelligence Agent is a Streamlit-based AI sales assistant built with Agno and GPT-OSS 120B through Groq.
+
+Its defining capability is persistent sales memory powered by Hindsight.
+
+The agent remembers important information about prospects, customers, deals, objections, requirements, stakeholders, pricing discussions, and previous outcomes.
+
+When a salesperson starts a new conversation later, the agent can recall relevant information from Hindsight and use it to provide personalized assistance without requiring the salesperson to repeat the previous context.
+
+SQLite is used only to persist and display application chat history.
+
+Hindsight is the long-term memory layer and the core differentiator of the application.
+
+CORE FLOW:
+
+User
+→ Streamlit
+→ Agno Sales Agent
+→ Hindsight Recall
+→ GPT-OSS 120B via Groq
+→ Personalized Response
+→ Hindsight Retention
+→ SQLite Chat Storage
+
+CORE DEMONSTRATION:
+
+Learn → Remember → New Chat → Recall → Personalize → Improve
+
+
+============================================================
+32. ONE-LINE PROJECT DESCRIPTION
+============================================================
+
+"An AI Sales & Revenue Agent that remembers every important deal interaction using Hindsight and uses that memory to provide increasingly personalized sales intelligence across conversations."
