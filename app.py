@@ -2,7 +2,7 @@ import streamlit as st
 import database
 from agent import get_agent_response
 
-st.set_page_config(page_title="Sales & Revenue Intelligence Agent", layout="wide")
+st.set_page_config(page_title="AI Sales Agent with Persistent Memory", layout="wide")
 
 def main():
     # Initialize DB
@@ -44,7 +44,7 @@ def main():
             st.rerun()
 
     # Main Chat Area
-    st.title("Sales & Revenue Intelligence Agent")
+    st.title("AI Sales Agent with Persistent Memory")
     st.markdown("An AI Sales Agent That Remembers Every Deal")
     st.markdown("---")
     
